@@ -2,11 +2,12 @@
 const map = L.map('leafletMap').setView([51.0447, -114.0719], 10.5);
 
 //Add OSM Basemap
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: '© <a href="https://apps.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 18,
     tileSize: 512,
     zoomOffset: -1,
+    accessToken: 'pk.eyJ1IjoibWlra29yYW1vcyIsImEiOiJja2o4MTJicmcwNGF5MzBwN3c2eGpiajJhIn0.6u3ND0vC40NLgZfQJOvO2A'
 }).addTo(map);
 
 //Add layer for markers and MarkerCluster
@@ -23,15 +24,25 @@ oms.addListener('click', function(marker) {
   map.openPopup(popup);
 });
 
-//Get current date for data validation
-const d = new Date();
+//Run stuff when the page loads
+function collectData() {
+    document.getElementById('test').innerHTML = "Page Loaded";
 
-//Initialize date picker widgets
-const dateRange = new Litepicker({
-    element: document.getElementById('startDate'),
-    maxDate: d,
-    singleMode: false,
-  });
+    const requestURL = "https://data.calgary.ca/resource/fd9t-tdn2.geojson";
+    const requestURLClinics = "https://data.calgary.ca/resource/x34e-bcjz.geojson?$where=type == 'PHS Clinic' or type == 'Hospital'";
+
+    //Run the GET request on schools
+    var schoolData = new HttpClient();
+    schoolData.get(requestURL, function(response) {
+      //createMarkers(response);
+    });
+
+    var clinicData = new HttpClient();
+    clinicData.get(requestURLClinics, function(response) {
+      //createMarkers(response);
+    });
+
+}
 
 //Save Variables from form
 document.querySelector('form').addEventListener('submit', (e) => {
@@ -43,14 +54,6 @@ document.querySelector('form').addEventListener('submit', (e) => {
   //Grab the individual start and end dates from the larger string
   let fromDate = dates.substr(0,10);
   let endDate = dates.substr(13);
-
-  let requestURL = "https://data.calgary.ca/resource/c2es-76ed.geojson?" + "$where=issueddate > " + "\'" + fromDate + "\'" + " and issueddate < " + "\'" + endDate + "\'";
-
-  //Run the GET request on the API
-  var data = new HttpClient();
-  data.get(requestURL, function(response) {
-    createMarkers(response);
-  });
 
   //Make the alert box visible to show alerts
   document.getElementById('test').style.visibility = "visible";
@@ -81,7 +84,7 @@ let HttpClient = function() {
 function createMarkers(json) {
   const data = JSON.parse(json);
 
-  console.log(data);
+  //console.log(data);
 
   //Clear any existing marker data
   markers.clearLayers();
@@ -97,18 +100,15 @@ function createMarkers(json) {
       if (data.features[i].geometry != null) {
         let coords = data.features[i].geometry.coordinates;
 
-        let date = data.features[i].properties.issueddate || "N/A";
-        let wcGroup = data.features[i].properties.workclassgroup || "N/A";
-        let contractor = data.features[i].properties.contractorname || "N/A";
-        let community = data.features[i].properties.communityname || "N/A";
-        let address = data.features[i].properties.originaladdress || "N/A";
+        // let name = data.features[i].properties.NAME || "N/A";
+        // let type = data.features[i].properties.TYPE || "N/A";
+        // let code = data.features[i].properties.COMM_CODE || "N/A";
+        // let address = data.features[i].properties.ADDRESS || "N/A";
 
-        let description = "<table class='table'><tr><th>Issued Date: </th><td>" + date + "</td> </tr> <tr> <th>Community Name: </th>" + "<td>" + community + "</td></tr><tr><th>Work Class Group: </th>" + "<td>" + wcGroup + "</td></tr><tr><th>Contractor: </th> <td>" + contractor + "</td> </tr><tr><th>Original Address: </th>" + "<td>" + address + "</td></tr></table>";
+        //let description = "<table class='table'><tr><th>Issued Date: </th><td>" + date + "</td> </tr> <tr> <th>Community Name: </th>" + "<td>" + community + "</td></tr><tr><th>Work Class Group: </th>" + "<td>" + wcGroup + "</td></tr><tr><th>Contractor: </th> <td>" + contractor + "</td> </tr><tr><th>Original Address: </th>" + "<td>" + address + "</td></tr></table>";
 
         //Add marker to the spiderifier layer
         let marker = new L.marker([coords[1], coords[0]]);
-        marker.desc = description;
-        oms.addMarker(marker);
 
         //Add marker to the cluster layer
         markers.addLayer(marker);
@@ -119,7 +119,7 @@ function createMarkers(json) {
 
     //Add cluster marker layer to the map
     map.addLayer(markers);
-    
-    document.getElementById('test').innerHTML = "Successfully loaded " + data.features.length + " features.";
+
+    //document.getElementById('test').innerHTML = "Successfully loaded " + data.features.length + " features.";
   }
 }

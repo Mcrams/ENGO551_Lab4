@@ -18,17 +18,15 @@
   <!--Link to local CSS-->
   <link rel="stylesheet" href="styles.css">
 
-  <title>ENGO 551 Lab 2</title>
+  <title>ENGO 551 Lab 4</title>
 
 </head>
-<body data-spy="scroll" data-target="scrollSpyCol">
+<body onload="collectData()">
 
   <!--Bootstrap navbar component-->
   <nav class="navbar navbar-expand-md navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="index.html">ENGO 551 - Lab 2</a>
-
-
+      <a class="navbar-brand" href="index.html">ENGO 551 - Lab 4</a>
 
     </div>
   </nav>
@@ -76,14 +74,14 @@
   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
   crossorigin=""></script>
 
+  <!--Load Turf JS"-->
+  <script src='https://unpkg.com/@turf/turf@6.3.0/turf.min.js'></script>
+
   <!--Load Markercluster JS"-->
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
   <!--Load Spiderifier JS-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
-
-  <!--Load datepicker JS-->
-  <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
 
   <!--Link to local JS-->
   <script type="text/javascript "src="mapScripts.js"></script>
