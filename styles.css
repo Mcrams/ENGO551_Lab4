@@ -23,8 +23,8 @@ body {
 .hospitalIcon {
   background-color: red;
   display: inline-block;
-  height: 10px;
-  width: 10px;
+  height: 20px;
+  width: 20px;
   border-radius: 50%;
   border: 1px solid black;
 }
@@ -32,8 +32,8 @@ body {
 .hospitalIconClicked {
   background-color: yellow;
   display: inline-block;
-  height: 50px;
-  width: 50px;
+  height: 20px;
+  width: 20px;
   border-radius: 50%;
   border: 1px solid black;
 }

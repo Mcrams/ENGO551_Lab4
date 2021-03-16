@@ -60,33 +60,36 @@ map.addLayer(nearestHospitalPoint);
 
 //Set onclick function to activate turf
 schools.on("click", function (e) {
+  //Clear the highlighted nearest hospital if any
+  nearestHospitalPoint.clearLayers();
 
-    nearestHospitalPoint.clearLayers();
-    const clickedMarker = e.layer.toGeoJSON();
+  //Find the clicked marker and convert to GeoJSON for Turf
+  const clickedMarker = e.layer.toGeoJSON();
 
+  //Run Turf nearest() calculation with GeoJSON objects
+  const nearestHospital = turf.nearest(clickedMarker, hospitals.toGeoJSON());
 
-    const nearestHospital = turf.nearest(clickedMarker, hospitals.toGeoJSON());
+  //Extract lat and long from turf function
+  const nhLng = nearestHospital.geometry.coordinates[0];
+  const nhLat = nearestHospital.geometry.coordinates[1];
 
-    const nhLng = nearestHospital.geometry.coordinates[0];
-    const nhLat = nearestHospital.geometry.coordinates[1];
+  //Create a new marker on top of the found hospital marker and set z-index for visibility
+  L.marker([nhLat, nhLng], {icon: hospitalIconClicked, zIndexOffset: 1000}).addTo(nearestHospitalPoint);
 
-    L.marker([nhLat, nhLng], {icon: hospitalIconClicked}).addTo(nearestHospitalPoint);
+  //Output results to sidebar
+  document.getElementById('announcer').style.display = "block";
+  document.getElementById('schoolName').innerHTML = e.layer.options.title;
+  document.getElementById('kmDistance').innerHTML = nearestHospital.properties.distanceToPoint.toFixed(3);
 
-    document.getElementById('announcer').style.display = "block";
-    document.getElementById('schoolName').innerHTML = e.layer.options.title;
-    document.getElementById('kmDistance').innerHTML = nearestHospital.properties.distanceToPoint.toFixed(3);
+  //Find hospital in feature group from turf function via lat/long, and output hospital name
+  hospitals.eachLayer(function (e) {
+    const hLat = e._latlng.lat.toFixed(6);
+    const hLng = e._latlng.lng.toFixed(6);
 
-    hospitals.eachLayer(function (e) {
-      const hLat = e._latlng.lat.toFixed(6);
-      const hLng = e._latlng.lng.toFixed(6);
-
-      if (hLat == nhLat && hLng == nhLng) {
-        document.getElementById('hospName').innerHTML = e.options.title;
-      }
-    });
-
-
-
+    if (hLat == nhLat && hLng == nhLng) {
+      document.getElementById('hospName').innerHTML = e.options.title;
+    }
+  });
 });
 
 //XML HTTP Object for GET requests
@@ -110,7 +113,7 @@ function createMarkers(json, type) {
   const data = JSON.parse(json);
 
   if (data.features.length == 0) {
-    document.getElementById('test').innerHTML = "Sorry, there is no data available for these dates.";
+    alert("Sorry, there is no data available.");
   } else {
     for (i in data.features) {
       //If the feature has no geometry, skip it
@@ -118,29 +121,20 @@ function createMarkers(json, type) {
         //Set feature geometry
         let coords = data.features[i].geometry.coordinates;
 
-          //Cluster school data, but not hospital data
-          if (type == "schools") {
+        //Get name from GeoJSON
+        const name = data.features[i].properties.name || "N/A";
 
-          const name = data.features[i].properties.name || "N/A";
-          // let type = data.features[i].properties.TYPE || "N/A";
-          // let code = data.features[i].properties.COMM_CODE || "N/A";
-          // let address = data.features[i].properties.ADDRESS || "N/A";
+        //Add marker to the schools layer
+        let marker = new L.marker([coords[1], coords[0]], {title: name}).bindPopup(name);
 
-          const description = "<h5>" + name + "</h5>";
-
-          //Add marker to the spiderifier layer
-          let marker = new L.marker([coords[1], coords[0]], {icon: schoolIcon, title: name}).bindPopup(name).addTo(schools);
-
-        } else if (type == "hospitals") {
-          const name = data.features[i].properties.name || "N/A";
-          let marker = new L.marker([coords[1], coords[0]], {icon: hospitalIcon, title: name}).addTo(hospitals);
+        //Allocate the correct icon style and feature class depending on data type
+        if (type == "hospitals") {
+          marker.setIcon(hospitalIcon).addTo(hospitals);
+        } else if (type == "schools") {
+          marker.setIcon(schoolIcon).addTo(schools);
         }
-
 
       }
     }
-
-
-    //document.getElementById('test').innerHTML = "Successfully loaded " + data.features.length + " features.";
   }
 }
